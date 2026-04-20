@@ -8,32 +8,45 @@ export default defineEventHandler(async (event) => {
   const startTime = Date.now();
 
   // 获取请求信息
-  const url = event.node.req.url;
-  const method = event.node.req.method;
-  const headers = event.headers;
-  const clientIp = event.node.req.socket.remoteAddress || "unknown";
+  const url = event.node.req.url || "";
+  const method = event.node.req.method || "UNKNOWN";
+  const clientIp = 
+    event.node.req.socket.remoteAddress || 
+    event.node.req.headers["x-forwarded-for"] || 
+    "unknown";
+
+  // 获取请求头信息
+  const userAgent = event.node.req.headers["user-agent"] || "unknown";
+  const contentType = event.node.req.headers["content-type"];
 
   // 获取请求参数
-  const query = getQuery(event);
-  let body = {};
-
-  // 尝试读取请求体（仅适用于POST等方法）
+  let query = {};
   try {
-    body = (await readBody(event)) || {};
+    query = getQuery(event);
   } catch (e) {
-    // 忽略读取请求体的错误
+    logger.warn("Failed to parse query params", { url, error: e });
   }
 
+  // 尝试读取请求体（仅适用于 POST 等方法）
+  let body = {};
+  if (["POST", "PUT", "PATCH"].includes(method)) {
+    try {
+      body = (await readBody(event)) || {};
+    } catch (e) {
+      logger.warn("Failed to read request body", { url, method, error: e });
+    }
+  }
+
+  // 记录请求进入日志
   logger.info("Incoming request", {
     method,
     url,
-    query,
+    query: Object.keys(query).length > 0 ? query : undefined,
     body: Object.keys(body).length > 0 ? body : undefined,
     clientIp,
-    headers: {
-      "user-agent": headers.get("user-agent"),
-      "content-type": headers.get("content-type"),
-    },
+    userAgent,
+    contentType,
+    timestamp: new Date().toISOString(),
   });
 
   // 记录响应信息的中间件
@@ -46,6 +59,8 @@ export default defineEventHandler(async (event) => {
       url,
       statusCode,
       duration: `${duration}ms`,
+      clientIp,
+      timestamp: new Date().toISOString(),
     });
   });
 

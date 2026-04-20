@@ -27,7 +27,6 @@ const { data, error } = await useAsyncData(
     watch: [normalizedSlug],
   },
 );
-console.log(data.value);
 
 const pageError = error.value as {
   statusCode?: number;
@@ -45,7 +44,6 @@ if (pageError) {
 
 const page = computed(() => data.value?.page ?? null);
 const blocks = computed(() => page.value?.content ?? []);
-
 const pageTitle = computed(
   () => page.value?.seo?.title || page.value?.name || normalizedSlug.value,
 );

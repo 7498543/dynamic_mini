@@ -12,6 +12,7 @@ export default defineNuxtConfig({
   modules: ["@nuxt/ui"],
 
   runtimeConfig: {
+    secretKey: process.env.SECRET_KEY,
     database: {
       url: process.env.DATABASE_URL,
     },

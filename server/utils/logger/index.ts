@@ -10,10 +10,26 @@ const levels = {
 
 const format = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), // 时间戳
-  winston.format.json(), // JSON格式（便于解析）
-  winston.format.printf(({ timestamp, level, message, pid }) => {
+  winston.format.printf(({ timestamp, level, message, pid, clientIp, method, url, statusCode, duration, userAgent, ...meta }) => {
     // 自定义输出格式
-    return `[${timestamp}] [${pid}] [${level.toUpperCase()}]: ${message}`;
+    const baseLog = `[${timestamp}] [${pid || "system"}] [${level.toUpperCase()}]: ${message}`;
+    
+    // 添加额外的字段
+    const extraFields: string[] = [];
+    if (clientIp) extraFields.push(`IP: ${clientIp}`);
+    if (method) extraFields.push(`Method: ${method}`);
+    if (url) extraFields.push(`URL: ${url}`);
+    if (statusCode) extraFields.push(`Status: ${statusCode}`);
+    if (duration) extraFields.push(`Duration: ${duration}`);
+    if (userAgent) extraFields.push(`UA: ${userAgent}`);
+    
+    // 合并所有字段
+    const extraLog = extraFields.length > 0 ? ` | ${extraFields.join(" | ")}` : "";
+    
+    // 如果有其他元数据，也添加进去
+    const metaLog = Object.keys(meta).length > 0 ? ` | Meta: ${JSON.stringify(meta)}` : "";
+    
+    return `${baseLog}${extraLog}${metaLog}`;
   }),
 );
 
@@ -31,19 +47,19 @@ const transports = [
     filename: "logs/%DATE%.log", // 日志文件名格式（包含日期）
     datePattern: "YYYY-MM-DD", // 日期格式
     zippedArchive: true, // 压缩旧日志
-    maxSize: "20m", // 每个日志文件最大20MB
-    maxFiles: "7d", // 保留7天的日志
+    maxSize: "20m", // 每个日志文件最大 20MB
+    maxFiles: "7d", // 保留 7 天的日志
     format, // 复用上面定义的格式
   }),
 
-  // 输出到文件（只记录error级别的日志）
+  // 输出到文件（只记录 error 级别的日志）
   new DailyRotateFile({
     filename: "logs/%DATE%-error.log", // 日志文件名格式（包含日期）
     datePattern: "YYYY-MM-DD", // 日期格式
     zippedArchive: true, // 压缩旧日志
-    maxSize: "20m", // 每个日志文件最大20MB
-    maxFiles: "14d", // 保留14天的日志
-    level: "error", // 只记录error级别的日志
+    maxSize: "20m", // 每个日志文件最大 20MB
+    maxFiles: "14d", // 保留 14 天的日志
+    level: "error", // 只记录 error 级别的日志
     format, // 复用上面定义的格式
   }),
 ];
@@ -51,8 +67,7 @@ const transports = [
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
   levels,
-  format: winston.format.json(),
-  defaultMeta: { service: "user-service" },
+  defaultMeta: { service: "nuxt-app" },
   transports,
 });
 
