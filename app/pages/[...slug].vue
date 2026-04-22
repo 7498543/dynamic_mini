@@ -52,7 +52,7 @@ const pageDescription = computed(
   () => page.value?.seo?.description || page.value?.description || "",
 );
 
-watchEffect(() => {
+onMounted(() => {
   if (page.value?.layout) {
     setPageLayout(page.value.layout);
   }

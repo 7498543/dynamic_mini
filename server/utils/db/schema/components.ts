@@ -1,32 +1,24 @@
-import {
-  index,
-  int,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { index, int, json, mysqlTable, text, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 import type { BlockSlotMap } from "~~/types/renderer";
 import {
+  MYSQL_INDEXED_TEXT_LENGTH,
   enabledColumn,
   softDeleteColumn,
   sortColumn,
   timestamps,
 } from "./shared";
 
-export const componentSchema = sqliteTable(
+export const componentSchema = mysqlTable(
   "component",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
-    component: text("component").notNull(),
-    displayName: text("display_name"),
+    id: int("id").autoincrement().primaryKey(),
+    component: varchar("component", {
+      length: MYSQL_INDEXED_TEXT_LENGTH,
+    }).notNull(),
+    displayName: varchar("display_name", { length: 191 }),
     description: text("description"),
-    componentProps: text("component_props", { mode: "json" }).$type<Record<
-      string,
-      unknown
-    > | null>(),
-    componentSlots: text("component_slots", {
-      mode: "json",
-    }).$type<BlockSlotMap | null>(),
+    componentProps: json("component_props").$type<Record<string, unknown> | null>(),
+    componentSlots: json("component_slots").$type<BlockSlotMap | null>(),
     ...enabledColumn(),
     ...sortColumn(),
     ...timestamps(),
@@ -34,8 +26,9 @@ export const componentSchema = sqliteTable(
   },
   (table) => ({
     componentIdx: uniqueIndex("component_component_unique").on(table.component),
-    enabledIdx: index("component_enabled_sort_idx").on(
+    enabledIdx: index("component_enabled_deleted_sort_idx").on(
       table.enabled,
+      table.deletedAt,
       table.sort,
     ),
   }),

@@ -1,26 +1,22 @@
 import { relations } from "drizzle-orm";
+import { index, int, json, mysqlTable, text, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 import {
-  index,
-  int,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
-import {
+  MYSQL_INDEXED_TEXT_LENGTH,
+  MYSQL_URL_LENGTH,
   enabledColumn,
   softDeleteColumn,
   sortColumn,
   timestamps,
 } from "./shared";
 
-export const commoditySchema = sqliteTable(
+export const commoditySchema = mysqlTable(
   "commodity",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 191 }).notNull(),
+    slug: varchar("slug", { length: MYSQL_INDEXED_TEXT_LENGTH }).notNull(),
     description: text("description"),
-    coverImage: text("cover_image"),
+    coverImage: varchar("cover_image", { length: MYSQL_URL_LENGTH }),
     ...enabledColumn(),
     ...sortColumn(),
     ...timestamps(),
@@ -28,26 +24,24 @@ export const commoditySchema = sqliteTable(
   },
   (table) => ({
     slugIdx: uniqueIndex("commodity_slug_unique").on(table.slug),
-    enabledIdx: index("commodity_enabled_sort_idx").on(
+    enabledIdx: index("commodity_enabled_deleted_sort_idx").on(
       table.enabled,
+      table.deletedAt,
       table.sort,
     ),
   }),
 );
 
-export const commoditySkuSchema = sqliteTable(
+export const commoditySkuSchema = mysqlTable(
   "commodity_sku",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
+    id: int("id").autoincrement().primaryKey(),
     commodityId: int("commodity_id")
       .notNull()
       .references(() => commoditySchema.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    code: text("code").notNull(),
-    attributes: text("attributes", { mode: "json" }).$type<Record<
-      string,
-      unknown
-    > | null>(),
+    name: varchar("name", { length: 191 }).notNull(),
+    code: varchar("code", { length: MYSQL_INDEXED_TEXT_LENGTH }).notNull(),
+    attributes: json("attributes").$type<Record<string, unknown> | null>(),
     price: int("price").notNull().default(0),
     originalPrice: int("original_price"),
     stock: int("stock").notNull().default(0),

@@ -2,12 +2,17 @@ import { relations } from "drizzle-orm";
 import {
   index,
   int,
+  longtext,
+  mysqlTable,
   primaryKey,
-  sqliteTable,
   text,
+  timestamp,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+  varchar,
+} from "drizzle-orm/mysql-core";
 import {
+  MYSQL_INDEXED_TEXT_LENGTH,
+  MYSQL_URL_LENGTH,
   enabledColumn,
   softDeleteColumn,
   sortColumn,
@@ -15,12 +20,12 @@ import {
 } from "./shared";
 import { sysUserSchema } from "./sys";
 
-export const articleCategorySchema = sqliteTable(
+export const articleCategorySchema = mysqlTable(
   "article_category",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 120 }).notNull(),
+    slug: varchar("slug", { length: MYSQL_INDEXED_TEXT_LENGTH }).notNull(),
     description: text("description"),
     ...enabledColumn(),
     ...sortColumn(),
@@ -29,19 +34,20 @@ export const articleCategorySchema = sqliteTable(
   },
   (table) => ({
     slugIdx: uniqueIndex("article_category_slug_unique").on(table.slug),
-    enabledIdx: index("article_category_enabled_sort_idx").on(
+    enabledIdx: index("article_category_enabled_deleted_sort_idx").on(
       table.enabled,
+      table.deletedAt,
       table.sort,
     ),
   }),
 );
 
-export const articleTagSchema = sqliteTable(
+export const articleTagSchema = mysqlTable(
   "article_tag",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 120 }).notNull(),
+    slug: varchar("slug", { length: MYSQL_INDEXED_TEXT_LENGTH }).notNull(),
     description: text("description"),
     ...enabledColumn(),
     ...sortColumn(),
@@ -50,32 +56,33 @@ export const articleTagSchema = sqliteTable(
   },
   (table) => ({
     slugIdx: uniqueIndex("article_tag_slug_unique").on(table.slug),
-    enabledIdx: index("article_tag_enabled_sort_idx").on(
+    enabledIdx: index("article_tag_enabled_deleted_sort_idx").on(
       table.enabled,
+      table.deletedAt,
       table.sort,
     ),
   }),
 );
 
-export const articleSchema = sqliteTable(
+export const articleSchema = mysqlTable(
   "article",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
-    title: text("title").notNull(),
-    slug: text("slug").notNull(),
+    id: int("id").autoincrement().primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: MYSQL_INDEXED_TEXT_LENGTH }).notNull(),
     summary: text("summary"),
-    coverImage: text("cover_image"),
-    author: text("author").notNull().default(""),
+    coverImage: varchar("cover_image", { length: MYSQL_URL_LENGTH }),
+    author: varchar("author", { length: 120 }).notNull().default(""),
     authorId: int("author_id").references(() => sysUserSchema.id, {
       onDelete: "set null",
     }),
     categoryId: int("category_id").references(() => articleCategorySchema.id, {
       onDelete: "set null",
     }),
-    content: text("content").notNull(),
+    content: longtext("content").notNull(),
     visitCount: int("visit_count").notNull().default(0),
     commentCount: int("comment_count").notNull().default(0),
-    publishedAt: int("published_at", { mode: "timestamp" }),
+    publishedAt: timestamp("published_at"),
     ...enabledColumn(),
     ...timestamps(),
     ...softDeleteColumn(),
@@ -84,14 +91,15 @@ export const articleSchema = sqliteTable(
     slugIdx: uniqueIndex("article_slug_unique").on(table.slug),
     categoryIdx: index("article_category_id_idx").on(table.categoryId),
     authorIdx: index("article_author_id_idx").on(table.authorId),
-    publishedIdx: index("article_enabled_published_idx").on(
+    publishedIdx: index("article_enabled_deleted_published_idx").on(
       table.enabled,
+      table.deletedAt,
       table.publishedAt,
     ),
   }),
 );
 
-export const articleTagRelationSchema = sqliteTable(
+export const articleTagRelationSchema = mysqlTable(
   "article_tag_relation",
   {
     articleId: int("article_id")
@@ -100,9 +108,7 @@ export const articleTagRelationSchema = sqliteTable(
     tagId: int("tag_id")
       .notNull()
       .references(() => articleTagSchema.id, { onDelete: "cascade" }),
-    createdAt: int("created_at", { mode: "timestamp" })
-      .$defaultFn(() => new Date())
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.articleId, table.tagId] }),
@@ -110,10 +116,10 @@ export const articleTagRelationSchema = sqliteTable(
   }),
 );
 
-export const articleCommentSchema = sqliteTable(
+export const articleCommentSchema = mysqlTable(
   "article_comment",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
+    id: int("id").autoincrement().primaryKey(),
     articleId: int("article_id")
       .notNull()
       .references(() => articleSchema.id, { onDelete: "cascade" }),
@@ -124,7 +130,7 @@ export const articleCommentSchema = sqliteTable(
     userId: int("user_id").references(() => sysUserSchema.id, {
       onDelete: "set null",
     }),
-    nickname: text("nickname"),
+    nickname: varchar("nickname", { length: 120 }),
     ...enabledColumn(),
     ...timestamps(),
     ...softDeleteColumn(),

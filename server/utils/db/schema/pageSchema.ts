@@ -2,54 +2,64 @@ import { relations } from "drizzle-orm";
 import {
   index,
   int,
-  sqliteTable,
-  text,
+  json,
+  mysqlTable,
+  timestamp,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+  varchar,
+} from "drizzle-orm/mysql-core";
 import type { Block, I18nMap, Meta, Seo } from "../../../../types/renderer";
-import { softDeleteColumn, sortColumn, timestamps } from "./shared";
+import {
+  MYSQL_INDEXED_TEXT_LENGTH,
+  softDeleteColumn,
+  sortColumn,
+  timestamps,
+} from "./shared";
 
-export const pageSchema = sqliteTable(
+export const pageSchema = mysqlTable(
   "page",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),
-    description: text("description"),
-    slug: text("slug").notNull(),
-    layout: text("layout").notNull().default("default"),
-    status: text("status").notNull().default("published"),
-    content: text("content", { mode: "json" }).$type<Block[] | null>(),
-    seo: text("seo", { mode: "json" }).$type<Seo | null>(),
-    i18n: text("i18n", { mode: "json" }).$type<I18nMap | null>(),
-    meta: text("meta", { mode: "json" }).$type<Meta | null>(),
-    publishedAt: int("published_at", { mode: "timestamp" }),
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 191 }).notNull(),
+    description: varchar("description", { length: 512 }),
+    slug: varchar("slug", { length: MYSQL_INDEXED_TEXT_LENGTH }).notNull(),
+    layout: varchar("layout", { length: 64 }).notNull().default("default"),
+    status: varchar("status", { length: 32 }).notNull().default("published"),
+    content: json("content").$type<Block[] | null>(),
+    seo: json("seo").$type<Seo | null>(),
+    i18n: json("i18n").$type<I18nMap | null>(),
+    meta: json("meta").$type<Meta | null>(),
+    publishedAt: timestamp("published_at"),
     ...sortColumn(),
     ...timestamps(),
     ...softDeleteColumn(),
   },
   (table) => ({
     slugIdx: uniqueIndex("page_slug_unique").on(table.slug),
-    statusIdx: index("page_status_sort_idx").on(table.status, table.sort),
+    visibilityIdx: index("page_status_deleted_sort_idx").on(
+      table.status,
+      table.deletedAt,
+      table.sort,
+    ),
+    publishedIdx: index("page_published_at_idx").on(table.publishedAt),
   }),
 );
 
-export const pageVersion = sqliteTable(
+export const pageVersion = mysqlTable(
   "page_version",
   {
-    id: int("id").primaryKey({ autoIncrement: true }),
+    id: int("id").autoincrement().primaryKey(),
     pageId: int("page_id")
       .notNull()
       .references(() => pageSchema.id, { onDelete: "cascade" }),
     version: int("version").notNull(),
-    layout: text("layout").notNull().default("default"),
-    content: text("content", { mode: "json" }).$type<Block[] | null>(),
-    seo: text("seo", { mode: "json" }).$type<Seo | null>(),
-    i18n: text("i18n", { mode: "json" }).$type<I18nMap | null>(),
-    meta: text("meta", { mode: "json" }).$type<Meta | null>(),
-    note: text("note"),
-    createdAt: int("created_at", { mode: "timestamp" })
-      .$defaultFn(() => new Date())
-      .notNull(),
+    layout: varchar("layout", { length: 64 }).notNull().default("default"),
+    content: json("content").$type<Block[] | null>(),
+    seo: json("seo").$type<Seo | null>(),
+    i18n: json("i18n").$type<I18nMap | null>(),
+    meta: json("meta").$type<Meta | null>(),
+    note: varchar("note", { length: 255 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
     pageIdIdx: index("page_version_page_id_idx").on(table.pageId),

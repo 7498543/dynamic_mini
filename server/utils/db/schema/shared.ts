@@ -1,19 +1,23 @@
-import { int } from "drizzle-orm/sqlite-core";
+import { boolean, int, timestamp } from "drizzle-orm/mysql-core";
+
+export const MYSQL_INDEXED_TEXT_LENGTH = 191;
+export const MYSQL_URL_LENGTH = 512;
 
 export function timestamps() {
   return {
-    createdAt: int("created_at", { mode: "timestamp" })
-      .$defaultFn(() => new Date())
+    createdAt: timestamp("created_at", { mode: "string" })
+      .default("CURRENT_TIMESTAMP")
       .notNull(),
-    updatedAt: int("updated_at", { mode: "timestamp" })
-      .$defaultFn(() => new Date())
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .default("CURRENT_TIMESTAMP")
+      .$onUpdate(() => "CURRENT_TIMESTAMP")
       .notNull(),
   };
 }
 
 export function enabledColumn() {
   return {
-    enabled: int("enabled", { mode: "boolean" }).notNull().default(true),
+    enabled: boolean("enabled").notNull().default(true),
   };
 }
 
@@ -25,6 +29,6 @@ export function sortColumn() {
 
 export function softDeleteColumn() {
   return {
-    deletedAt: int("deleted_at").notNull().default(0),
+    deletedAt: timestamp("deleted_at", { mode: "string" }),
   };
 }

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { getDB } from "@@/server/utils/db";
 import { pageSchema } from "@@/server/utils/db/schema";
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     const pageData = await db.query.pageSchema.findFirst({
       where: and(
         eq(pageSchema.slug, normalizedSlug),
-        eq(pageSchema.deletedAt, 0),
+        isNull(pageSchema.deletedAt),
         eq(pageSchema.status, "published"),
       ),
     });

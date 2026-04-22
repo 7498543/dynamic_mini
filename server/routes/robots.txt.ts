@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { getDB } from "../utils/db";
 import { robots } from "../utils/db/schema";
 import { createLogger } from "#server/utils/logger";
@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
     const db = getDB();
 
     const robot = await db.query.robots.findFirst({
-      where: and(eq(robots.enabled, true), eq(robots.deletedAt, 0)),
-      orderBy: [asc(robots.updatedAt), asc(robots.createdAt)],
+      where: and(eq(robots.enabled, true), isNull(robots.deletedAt)),
+      orderBy: [desc(robots.updatedAt), desc(robots.createdAt)],
     });
 
     setHeader(event, "Content-Type", "text/plain; charset=utf-8");
