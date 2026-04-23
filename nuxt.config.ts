@@ -11,6 +11,10 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: ["@nuxt/ui"],
 
+  ui: {
+    fonts: false
+  },
+
   runtimeConfig: {
     secretKey: process.env.SECRET_KEY,
     database: {

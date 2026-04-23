@@ -1,16 +1,15 @@
-import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
-import { getDB } from "@@/server/utils/db";
-import { pageSchema } from "@@/server/utils/db/schema";
-import { normalizeSlug } from "~~/shared/slug/utils";
+import { and, eq, isNull } from 'drizzle-orm';
+import { z } from 'zod';
+import { getDB } from '@@/server/utils/db';
+import { pageSchema } from '@@/server/utils/db/schema';
 import {
   successResponse,
   errorResponse,
   StatusCode,
-} from "@@/server/utils/response";
+} from '@@/server/utils/response';
 
 const querySchema = z.object({
-  slug: z.string().trim().default("/"),
+  slug: z.string().trim().default('/'),
 });
 
 export default defineEventHandler(async (event) => {
@@ -25,14 +24,14 @@ export default defineEventHandler(async (event) => {
       where: and(
         eq(pageSchema.slug, normalizedSlug),
         isNull(pageSchema.deletedAt),
-        eq(pageSchema.status, "published"),
+        eq(pageSchema.status, 'published')
       ),
     });
 
     if (!pageData) {
       return errorResponse(
         StatusCode.NOT_FOUND,
-        `Page "${normalizedSlug}" not found`,
+        `Page "${normalizedSlug}" not found`
       );
     }
 
@@ -44,9 +43,9 @@ export default defineEventHandler(async (event) => {
       meta: pageData.meta ?? null,
     };
 
-    return successResponse({ page }, "Page fetched successfully");
+    return successResponse({ page }, 'Page fetched successfully');
   } catch (error) {
-    console.error("Error fetching page:", error);
-    return errorResponse(StatusCode.SERVER_ERROR, "Internal server error");
+    console.error('Error fetching page:', error);
+    return errorResponse(StatusCode.SERVER_ERROR, 'Internal server error');
   }
 });

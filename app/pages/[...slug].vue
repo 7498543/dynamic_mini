@@ -7,25 +7,24 @@
 </template>
 
 <script lang="ts" setup>
-import type { Page } from "~~/server/utils/db/schema";
-import { normalizeSlug } from "~~/shared/slug/utils";
+import type { Page } from '~~/server/utils/db/schema';
 
 const route = useRoute();
 
 const normalizedSlug = computed(() => normalizeSlug(route.path));
 
 const { data, error } = await useAsyncData(
-  "page-by-slug",
+  'page-by-slug',
   () =>
-    useHttp<{ page: Page }>("/api/page/slug", {
-      method: "GET",
+    useHttp<{ page: Page }>('/api/page/slug', {
+      method: 'GET',
       query: {
         slug: normalizedSlug.value,
       },
     }),
   {
     watch: [normalizedSlug],
-  },
+  }
 );
 
 const pageError = error.value as {
@@ -38,18 +37,18 @@ if (pageError) {
   throw createError({
     statusCode: pageError.statusCode ?? 500,
     statusMessage:
-      pageError.statusMessage ?? pageError.message ?? "Failed to load page",
+      pageError.statusMessage ?? pageError.message ?? 'Failed to load page',
   });
 }
 
 const page = computed(() => data.value?.page ?? null);
 const blocks = computed(() => page.value?.content ?? []);
 const pageTitle = computed(
-  () => page.value?.seo?.title || page.value?.name || normalizedSlug.value,
+  () => page.value?.seo?.title || page.value?.name || normalizedSlug.value
 );
 
 const pageDescription = computed(
-  () => page.value?.seo?.description || page.value?.description || "",
+  () => page.value?.seo?.description || page.value?.description || ''
 );
 
 onMounted(() => {

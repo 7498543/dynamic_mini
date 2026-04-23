@@ -1,4 +1,4 @@
-import type { UseFetchOptions } from "#app";
+import type { UseFetchOptions } from '#app';
 
 interface HttpOptions<O = any> extends UseFetchOptions<O> {
   sucCode: number[];
@@ -11,14 +11,14 @@ interface HttpOptions<O = any> extends UseFetchOptions<O> {
 const defaultOptions: HttpOptions = {
   sucCode: [200, 201],
   errCode: [400, 401, 403, 404, 500],
-  errField: "error",
-  dataField: "data",
+  errField: 'error',
+  dataField: 'data',
   completeData: true,
 };
 
 function mergeOptions(options: Partial<HttpOptions> = {}): HttpOptions {
   const headers = new Headers();
-  headers.append("Content-Type", "application/json");
+  headers.append('Content-Type', 'application/json');
 
   // 合并headers
   if (options?.headers) {
@@ -26,7 +26,10 @@ function mergeOptions(options: Partial<HttpOptions> = {}): HttpOptions {
       options.headers.forEach((value, key) => {
         headers.set(key, value);
       });
-    } else if (typeof options.headers === "object" && options.headers !== null) {
+    } else if (
+      typeof options.headers === 'object' &&
+      options.headers !== null
+    ) {
       if (Array.isArray(options.headers)) {
         options.headers.forEach((value) => {
           if (Array.isArray(value) && value.length >= 2) {
@@ -51,27 +54,24 @@ function mergeOptions(options: Partial<HttpOptions> = {}): HttpOptions {
   };
 }
 
-export function useHttp<T = any>(url: string, options: Partial<HttpOptions> = {}) {
-  const config = useRuntimeConfig();
-
-  const {
-    dataField,
-    completeData,
-    errField,
-    ...mergedOptions
-  } = mergeOptions(options);
+export function useHttp<T = any>(
+  url: string,
+  options: Partial<HttpOptions> = {}
+) {
+  const { dataField, completeData, errField, ...mergedOptions } =
+    mergeOptions(options);
 
   return $fetch<T>(url, mergedOptions)
     .then((res) => {
-      if (completeData && typeof res === "object" && res !== null) {
+      if (completeData && typeof res === 'object' && res !== null) {
         return (res as any)[dataField] as T;
       }
       return res;
     })
     .catch((error) => {
       // 增强错误处理
-      const errorMessage = error?.response?.data?.[errField] || error?.message || "请求失败";
-      console.error(`HTTP请求错误 [${url}]:`, errorMessage);
+      const errorMessage =
+        error?.response?.data?.[errField] || error?.message || '请求失败';
       throw new Error(errorMessage);
     });
 }
