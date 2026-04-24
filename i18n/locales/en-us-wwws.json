@@ -1,0 +1,12 @@
+{
+  "wwws": {
+    "response": {
+      "success": "Success",
+      "created": "Created",
+      "error": "Error",
+      "loading": "Loading...",
+      "notFound": "Not Found",
+      "internalServerError": "Internal Server Error"
+    }
+  }
+}

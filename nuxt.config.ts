@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: "2025-07-15",
+  compatibilityDate: '2025-07-15',
   future: {
     compatibilityVersion: 4,
   },
@@ -8,11 +8,33 @@ export default defineNuxtConfig({
   devServer: {
     port: 8116,
   },
-  css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/ui"],
+  css: ['~/assets/css/main.css'],
+  modules: ['@nuxt/ui', '@nuxtjs/i18n'],
 
   ui: {
-    fonts: false
+    fonts: false,
+  },
+
+  i18n: {
+    defaultLocale: 'zh',
+    locales: [
+      {
+        code: 'zh-cn',
+        name: '简体中文',
+        files: ['zh-cn.json', 'zh-cn-response.json'],
+      },
+      {
+        code: 'en-us',
+        name: 'English',
+        files: ['en-us.json', 'en-us-response.json'],
+      },
+    ],
+    langDir: 'locales',
+    strategy: 'prefix_except_default',
+    vueI18n: './i18n/config.ts',
+    bundle: {
+      optimizeTranslationDirective: false,
+    },
   },
 
   runtimeConfig: {

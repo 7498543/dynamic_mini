@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.6.1",
+    "@nuxtjs/i18n": "^9.5.6",
     "dotenv": "^17.4.1",
     "drizzle-orm": "^0.45.2",
     "mysql2": "^3.22.2",

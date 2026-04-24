@@ -1,0 +1,12 @@
+{
+  "wwws": {
+    "response": {
+      "success": "操作成功",
+      "created": "创建成功",
+      "error": "操作失败",
+      "loading": "加载中...",
+      "notFound": "页面未找到",
+      "internalServerError": "内部服务器错误"
+    }
+  }
+}
