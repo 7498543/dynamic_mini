@@ -1,0 +1,11 @@
+{
+  "form": {
+    "required": "Please input {field}",
+    "select": "Select {field}",
+    "min": "{field} length cannot be less than {min}",
+    "max": "{field} length cannot be greater than {max}",
+    "format": "{field} format error {example}",
+    "default": "{field} default value is {default}",
+    "placeholder": "Please input {field}"
+  }
+}

@@ -16,17 +16,17 @@ export default defineNuxtConfig({
   },
 
   i18n: {
-    defaultLocale: 'zh',
+    defaultLocale: 'zh-cn',
     locales: [
       {
         code: 'zh-cn',
         name: '简体中文',
-        files: ['zh-cn.json', 'zh-cn-response.json'],
+        files: ['zh-cn.json', 'zh-cn-wwws.json', 'zh-cn-form.json'],
       },
       {
         code: 'en-us',
         name: 'English',
-        files: ['en-us.json', 'en-us-response.json'],
+        files: ['en-us.json', 'en-us-wwws.json', 'en-us-form.json'],
       },
     ],
     langDir: 'locales',

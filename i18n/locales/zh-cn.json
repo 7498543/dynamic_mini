@@ -1,3 +1,23 @@
 {
-  
+  "common": {
+    "login": "登录",
+    "username": "用户名",
+    "password": "密码",
+    "submit": "提交",
+    "register": "注册",
+    "forgotPassword": "忘记密码",
+    "rememberMe": "记住我",
+    "checked": "已选中",
+    "unchecked": "未选中",
+    "error": "{field}错误",
+    "follow": "关注",
+    "unfollow": "取消关注",
+    "followed": "已关注",
+    "profile": "个人",
+    "logout": "退出",
+    "me": "我",
+    "menu": "菜单",
+    "home": "首页",
+    "success": "{field}成功"
+  }
 }

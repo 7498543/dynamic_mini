@@ -1,12 +1,5 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
-import { getDB } from '@@/server/utils/db';
-import { pageSchema } from '@@/server/utils/db/schema';
-import {
-  successResponse,
-  errorResponse,
-  StatusCode,
-} from '@@/server/utils/response';
 
 const querySchema = z.object({
   slug: z.string().trim().default('/'),
@@ -14,10 +7,11 @@ const querySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   try {
-    const query = getQuery(event);
-    const rawSlug = Array.isArray(query.slug) ? query.slug[0] : query.slug;
-    const { slug } = querySchema.parse({ slug: rawSlug });
-    const normalizedSlug = normalizeSlug(slug);
+    const query = await getValidatedQuery(event, querySchema.safeParse);
+    if (!query.success) {
+      return badRequestResponse(event, 'Invalid query');
+    }
+    const normalizedSlug = normalizeSlug(query.data.slug);
     const db = getDB();
 
     const pageData = await db.query.pageSchema.findFirst({
@@ -29,10 +23,7 @@ export default defineEventHandler(async (event) => {
     });
 
     if (!pageData) {
-      return errorResponse(
-        StatusCode.NOT_FOUND,
-        `Page "${normalizedSlug}" not found`
-      );
+      return notAuthorizedResponse(event, `Page "${normalizedSlug}" not found`);
     }
 
     const page = {
@@ -43,9 +34,9 @@ export default defineEventHandler(async (event) => {
       meta: pageData.meta ?? null,
     };
 
-    return successResponse({ page }, 'Page fetched successfully');
+    return successResponse(event, { page }, 'Page fetched successfully');
   } catch (error) {
     console.error('Error fetching page:', error);
-    return errorResponse(StatusCode.SERVER_ERROR, 'Internal server error');
+    return serverFaultResponse(event, 'Internal server error');
   }
 });

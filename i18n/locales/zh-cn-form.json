@@ -1,0 +1,11 @@
+{
+  "form": {
+    "required": "请输入{field}",
+    "select": "请选择{field}",
+    "min": "{field}长度不能小于{min}",
+    "max": "{field}长度不能大于{max}",
+    "format": "{field}格式错误{example}",
+    "default": "{field}默认值为{default}",
+    "placeholder": "请输入{field}"
+  }
+}

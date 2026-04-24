@@ -1,3 +1,23 @@
 {
-  
+  "common": {
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Submit",
+    "register": "Register",
+    "forgotPassword": "Forgot Password",
+    "rememberMe": "Remember me",
+    "checked": "Checked",
+    "unchecked": "Unchecked",
+    "error": "{field} error",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "followed": "Followed",
+    "profile": "Profile",
+    "logout": "Logout",
+    "me": "Me",
+    "menu": "Menu",
+    "home": "Home",
+    "success": "{field} success"
+  }
 }
